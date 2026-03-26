@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Portfolio</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(31, 40, 51, 0.5);
+            --primary-color: #00f3ff;
+            --text-main: #c5c6c7;
+            --text-heading: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            cursor: none; /* Hide default for custom cursor */
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* 1. Loader Screen */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .loader-circle {
+            width: 60px; height: 60px;
+            border: 4px solid transparent;
+            border-top-color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 2. Scroll Progress Bar */
+        #scroll-progress {
+            position: fixed;
+            top: 0; left: 0; height: 4px;
+            background: var(--primary-color);
+            width: 0%;
+            z-index: 9998;
+            box-shadow: 0 0 10px var(--primary-color);
+            transition: width 0.1s;
+        }
+
+        /* 3. Transparent Glass Navbar */
+        .glass-nav {
+            background: rgba(11, 12, 16, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+            transition: background 0.3s;
+        }
+        .navbar-brand {
+            color: var(--text-heading) !important;
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+        }
+        .navbar-brand span { color: var(--primary-color); text-shadow: 0 0 8px rgba(0, 243, 255, 0.5); }
+        .nav-link {
+            color: var(--text-main) !important;
+            font-weight: 500;
+            transition: 0.3s ease;
+            position: relative;
+            margin: 0 10px;
+        }
+        .nav-link:hover { color: var(--primary-color) !important; text-shadow: 0 0 8px rgba(0, 243, 255, 0.5); }
+        .nav-link::after {
+            content: ''; position: absolute;
+            bottom: -5px; left: 0; width: 0%; height: 2px;
+            background: var(--primary-color);
+            transition: 0.3s ease;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        /* 9. Custom Cursor */
+        #cursor {
+            position: fixed;
+            width: 20px; height: 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10000;
+            transition: width 0.2s, height 0.2s, background 0.2s;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+        .cursor-hover { width: 40px !important; height: 40px !important; background: rgba(0, 243, 255, 0.1); }
+
+        /* 10. Floating Particles Background */
+        #particles-js {
+            position: fixed; width: 100vw; height: 100vh;
+            top: 0; left: 0; z-index: -1;
+        }
+
+        /* Generic Setups */
+        section { padding: 120px 0; position: relative; }
+        .section-title {
+            text-align: center; font-size: 2.8rem; font-weight: 800; color: var(--text-heading);
+            margin-bottom: 60px; text-transform: uppercase; letter-spacing: 2px;
+        }
+        .section-title span { color: var(--primary-color); text-shadow: 0 0 15px rgba(0,243,255,0.4); }
+
+        /* 4. Hero Section */
+        #home {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: url('https://images.unsplash.com/photo-1550439062-609e1531270e?q=80&w=2070&auto=format&fit=crop') center center/cover no-repeat fixed;
+            margin-top: -76px; /* Offset for navbar */
+            padding-top: 76px;
+        }
+        #home::after {
+            content: '';
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(135deg, rgba(11,12,16,0.9) 0%, rgba(11,12,16,0.7) 100%);
+        }
+        .hero-content { position: relative; z-index: 1; }
+        
+        /* Animated Gradient Text */
+        .gradient-text {
+            font-size: 4.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ffffff, var(--primary-color), #ffffff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 4s linear infinite;
+        }
+        @keyframes shine { to { background-position: 200% center; } }
+        
+        #typing-container {
+            font-size: 2rem; font-weight: 600; color: var(--primary-color); margin-bottom: 20px; height: 40px;
+        }
+        .typing-cursor {
+            display: inline-block; width: 3px; height: 1.2em;
+            background-color: var(--primary-color); vertical-align: middle; margin-left: 5px;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .btn-glow {
+            background: transparent; color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 12px 35px; border-radius: 30px;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+            transition: 0.3s ease; position: relative; overflow: hidden;
+            text-decoration: none; display: inline-block; margin-top: 20px;
+        }
+        .btn-glow:hover {
+            background: var(--primary-color); color: #000; box-shadow: 0 0 25px var(--primary-color);
+        }
+
+        /* 5. Projects Section */
+        .glass-card {
+            background: var(--surface-color);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px; overflow: hidden; height: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform-style: preserve-3d;
+        }
+        .glass-card img {
+            width: 100%; height: 220px; object-fit: cover;
+            border-bottom: 2px solid rgba(0, 243, 255, 0.2);
+            transform: translateZ(20px);
+        }
+        .card-body-custom { padding: 25px; transform: translateZ(30px); }
+        .card-title { color: var(--text-heading); font-size: 1.4rem; font-weight: 700; margin-bottom: 15px; }
+        .card-text { font-size: 0.95rem; color: #a1a1a1; line-height: 1.6; }
+
+        /* 6. Scroll Reveal */
+        .reveal {
+            opacity: 0; transform: translateY(60px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* 7. Skills Section */
+        #skills {
+            background: rgba(31, 40, 51, 0.2);
+            border-top: 1px solid rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+        .skill-box { margin-bottom: 30px; }
+        .skill-name { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600; font-size: 1.1rem; color: var(--text-heading); }
+        .progress-custom {
+            height: 12px; background: rgba(0, 0, 0, 0.5); border-radius: 6px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .progress-bar-custom {
+            height: 100%; background: linear-gradient(90deg, #0056b3, var(--primary-color)); width: 0%;
+            transition: width 1.5s cubic-bezier(0.1, 0.5, 0.1, 1); position: relative;
+        }
+        .progress-bar-custom::after {
+            content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: progress-shine 2s infinite;
+        }
+        @keyframes progress-shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        /* 8. Contact Section */
+        .contact-form {
+            background: var(--surface-color); padding: 50px;
+            border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 650px; margin: 0 auto; backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        .form-control-custom {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main);
+            border-radius: 10px; padding: 15px 20px; margin-bottom: 25px; width: 100%; transition: 0.3s;
+            font-size: 1rem;
+        }
+        .form-control-custom::placeholder { color: #888; }
+        .form-control-custom:focus {
+            outline: none; border-color: var(--primary-color); box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            background: rgba(0,0,0,0.6); color: #fff;
+        }
+        textarea.form-control-custom { resize: none; }
+        .submit-btn { width: 100%; font-size: 1.1rem; padding: 15px; border-radius: 10px; border: none; cursor: pointer; }
+
+        /* 11. Scroll to Top */
+        #scrollTop {
+            position: fixed; bottom: -60px; right: 30px; width: 50px; height: 50px;
+            background: rgba(11, 12, 16, 0.8); color: var(--primary-color);
+            border: 2px solid var(--primary-color); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; cursor: pointer; z-index: 100;
+            transition: 0.4s cubic-bezier(0.5, -0.5, 0.5, 1.5); backdrop-filter: blur(5px);
+        }
+        #scrollTop.show { bottom: 30px; }
+        #scrollTop:hover {
+            background: var(--primary-color); color: #000; box-shadow: 0 0 20px var(--primary-color);
+            transform: translateY(-5px);
+        }
+
+        /* 12. Footer */
+        footer { padding: 40px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: rgba(11,12,16,0.9); position: relative; z-index: 1; }
+        footer p { font-size: 1.1rem; color: #a1a1a1; font-weight: 500; }
+        footer span { color: var(--primary-color); font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Loader Screen -->
+    <div id="loader">
+        <div class="loader-circle"></div>
+    </div>
+
+    <!-- 2. Scroll Progress Bar -->
+    <div id="scroll-progress"></div>
+
+    <!-- 9. Custom Cursor -->
+    <div id="cursor"></div>
+
+    <!-- 10. Particles Background -->
+    <div id="particles-js"></div>
+
+    <!-- 3. Transparent Glass Navbar -->
+    <nav class="navbar navbar-expand-lg glass-nav fixed-top py-3">
+        <div class="container">
+            <a class="navbar-brand hover-target" href="#home">Dev<span>Port.</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" style="border:1px solid var(--primary-color);">
+                <i class="fa-solid fa-bars" style="color:var(--primary-color);"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav ms-auto gx-4">
+                    <li class="nav-item"><a class="nav-link hover-target active" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link hover-target" href="#projects">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link hover-target" href="#skills">Skills</a></li>
+                    <li class="nav-item"><a class="nav-link hover-target" href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 4. Hero Section -->
+    <section id="home">
+        <div class="container hero-content text-center">
+            <h1 class="gradient-text mb-2 reveal active">Creative Developer</h1>
+            <div id="typing-container" class="reveal active" style="transition-delay: 0.1s;">
+                <span id="typing-text"></span><span class="typing-cursor"></span>
+            </div>
+            <p class="lead mb-5 reveal active" style="transition-delay: 0.2s; color: #a1a1a1; font-weight: 300;">Ultimate Web Developer Portfolio</p>
+            <a href="https://github.com" target="_blank" class="btn-glow hover-target reveal active" style="transition-delay: 0.4s;">Discover My Work</a>
+        </div>
+    </section>
+
+    <!-- 5. Projects Section -->
+    <section id="projects">
+        <div class="container">
+            <h2 class="section-title reveal">My <span>Projects</span></h2>
+            <div class="row g-5">
+                <div class="col-lg-4 col-md-6 reveal" style="transition-delay: 0.1s;">
+                    <a href="https://www.google.com/search?q=fintech+dashboard+design+dribbble" target="_blank" style="text-decoration: none; display: block;" class="glass-card element-tilt hover-target" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
+                        <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop" alt="Project 1">
+                        <div class="card-body-custom">
+                            <h3 class="card-title">FinTech Dashboard</h3>
+                            <p class="card-text">A modern financial dashboard with real-time analytics and dark mode layout.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6 reveal" style="transition-delay: 0.3s;">
+                    <a href="https://github.com/features/copilot" target="_blank" style="text-decoration: none; display: block;" class="glass-card element-tilt hover-target" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop" alt="Project 2">
+                        <div class="card-body-custom">
+                            <h3 class="card-title">Code Companion</h3>
+                            <p class="card-text">AI-powered code assistant platform featuring a sleek, developer-centric UI.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6 reveal" style="transition-delay: 0.5s;">
+                    <a href="https://nextjs.org/commerce" target="_blank" style="text-decoration: none; display: block;" class="glass-card element-tilt hover-target" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
+                        <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop" alt="Project 3">
+                        <div class="card-body-custom">
+                            <h3 class="card-title">E-Commerce Next</h3>
+                            <p class="card-text">High-performance digital storefront built with next-generation web technologies.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Skills Section -->
+    <section id="skills">
+        <div class="container">
+            <h2 class="section-title reveal">Core <span>Skills</span></h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-md-10">
+                    <div class="skill-box reveal" style="transition-delay: 0.1s;">
+                        <div class="skill-name"><span>HTML5 / CSS3</span><span>95%</span></div>
+                        <div class="progress-custom">
+                            <div class="progress-bar-custom" data-width="95%"></div>
+                        </div>
+                    </div>
+                    <div class="skill-box reveal" style="transition-delay: 0.2s;">
+                        <div class="skill-name"><span>JavaScript (ES6+)</span><span>90%</span></div>
+                        <div class="progress-custom">
+                            <div class="progress-bar-custom" data-width="90%"></div>
+                        </div>
+                    </div>
+                    <div class="skill-box reveal" style="transition-delay: 0.3s;">
+                        <div class="skill-name"><span>Bootstrap 5 / UI Design</span><span>85%</span></div>
+                        <div class="progress-custom">
+                            <div class="progress-bar-custom" data-width="85%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <h2 class="section-title reveal">Get in <span>Touch</span></h2>
+            <div class="contact-form reveal" style="transition-delay: 0.2s;">
+                <form id="contactForm" onsubmit="event.preventDefault(); alert('Sent!');">
+                    <input type="text" class="form-control-custom hover-target" placeholder="Your Name" required>
+                    <input type="email" class="form-control-custom hover-target" placeholder="Your Email" required>
+                    <textarea rows="5" class="form-control-custom hover-target" placeholder="Your Message" required></textarea>
+                    <button type="submit" class="btn-glow submit-btn hover-target">Send Message <i class="fa-solid fa-paper-plane ms-2"></i></button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 12. Footer -->
+    <footer>
+        <div class="container">
+            <p class="mb-0">Internship Portfolio 2026. Made with <i class="fa-solid fa-code" style="color:var(--primary-color);"></i> by A Developer.</p>
+        </div>
+    </footer>
+
+    <!-- 11. Scroll to Top -->
+    <div id="scrollTop" class="hover-target" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Go to top">
+        <i class="fa-solid fa-arrow-up"></i>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vanilla Tilt JS for 3D Cards -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+
+    <!-- Particles JS -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+    <script>
+        // Loader Screen
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }, 1000);
+        });
+
+        // Scroll Progress Bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('scroll-progress').style.width = scrolled + '%';
+        });
+
+        // Typing Window Animation
+        const typingText = document.getElementById('typing-text');
+        const textToType = "Welcome Developer";
+        let charIndex = 0;
+
+        function type() {
+            if (charIndex < textToType.length) {
+                typingText.textContent += textToType.charAt(charIndex);
+                charIndex++;
+                setTimeout(type, 120);
+            } else {
+                document.querySelector('.typing-cursor').style.animation = 'blink 1s step-end infinite';
+            }
+        }
+        setTimeout(type, 1500);
+
+        // Scroll Reveal & Nav Highlight & Progress Bar Grow
+        const reveals = document.querySelectorAll('.reveal');
+        const skillBars = document.querySelectorAll('.progress-bar-custom');
+
+        function checkReveal() {
+            const windowHeight = window.innerHeight;
+            const elementVisible = 120; // Trigger threshold
+
+            reveals.forEach(reveal => {
+                const elementTop = reveal.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveal.classList.add('active');
+                }
+            });
+
+            skillBars.forEach(bar => {
+                const elementTop = bar.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    bar.style.width = bar.getAttribute('data-width');
+                }
+            });
+            
+            // Highlight active nav link on scroll
+            const sections = document.querySelectorAll("section");
+            const navLinks = document.querySelectorAll(".nav-link");
+            let current = "";
+            sections.forEach((section) => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute("id");
+                }
+            });
+
+            navLinks.forEach((link) => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === `#${current}`) {
+                    link.classList.add("active");
+                }
+            });
+        }
+        window.addEventListener('scroll', checkReveal);
+        window.addEventListener('load', checkReveal);
+
+        // Custom Cursor
+        const cursor = document.getElementById('cursor');
+        const hoverTargets = document.querySelectorAll('.hover-target, a, button, input, textarea');
+
+        document.addEventListener('mousemove', e => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        hoverTargets.forEach(target => {
+            target.addEventListener('mouseenter', () => cursor.classList.add('cursor-hover'));
+            target.addEventListener('mouseleave', () => cursor.classList.remove('cursor-hover'));
+        });
+
+        // Floating Particles Background
+        particlesJS('particles-js', {
+            "particles": {
+                "number": { "value": 40, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#00f3ff" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5, "random": true },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#00f3ff", "opacity": 0.2, "width": 1 },
+                "move": { "enable": true, "speed": 1, "direction": "top", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": { "onhover": { "enable": true, "mode": "repulse" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
+                "modes": { "repulse": { "distance": 100, "duration": 0.4 }, "push": { "particles_nb": 4 } }
+            },
+            "retina_detect": true
+        });
+
+        // Scroll to Top Button
+        const scrollTopBtn = document.getElementById('scrollTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
